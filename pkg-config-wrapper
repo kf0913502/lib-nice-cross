@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# Define the staging directory path (making it absolute)
+STAGING_DIR="/home/parallels/second_part/RUTX_R_GPL_00.07.12.3/rutos-ipq40xx-rutx-sdk/staging_dir"
+
+# Define derived paths
+STAGING_DIR_HOST="${STAGING_DIR}/host"
+STAGING_DIR_HOSTPKG="${STAGING_DIR}/hostpkg"
+STAGING_TARGET_DIR="/${STAGING_DIR}/target-arm_cortex-a7+neon-vfpv4_musl_eabi"
+STAGING_PREFIX="${STAGING_TARGET_DIR}/usr"
+
+
+export PKG_CONFIG_PATH="${STAGING_TARGET_DIR}/usr/lib/pkgconfig"
+
+
+# Execute pkg-config.real with the original parameters
+LD_LIBRARY_PATH="/lib:/usr/lib:${STAGING_DIR_HOST}/lib:${STAGING_DIR_HOSTPKG}/lib" ${STAGING_DIR}/host/bin/pkg-config.real \
+        --keep-system-cflags \
+        --keep-system-libs \
+        --define-variable=prefix="${STAGING_PREFIX}" \
+        --define-variable=exec_prefix="${STAGING_PREFIX}" \
+        --define-variable=bindir="${STAGING_PREFIX}/bin" "$@"

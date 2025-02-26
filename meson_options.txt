@@ -24,3 +24,6 @@ option('gtk_doc', type : 'feature', value : 'disabled', yield : true,
   description: 'Generate API documentation with gtk-doc')
 option('introspection', type : 'feature', value : 'auto', yield : true,
   description : 'Generate gobject-introspection bindings')
+  
+  option('openssl_static_path', type: 'string', value: '', description: 'Path to static OpenSSL installation')
+

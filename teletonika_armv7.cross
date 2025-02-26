@@ -1,0 +1,30 @@
+[binaries]
+c = '/home/parallels/second_part/RUTX_R_GPL_00.07.12.3/rutos-ipq40xx-rutx-sdk/staging_dir/toolchain-arm_cortex-a7+neon-vfpv4_gcc-8.4.0_musl_eabi/bin/arm-openwrt-linux-gcc'
+cpp = '/home/parallels/second_part/RUTX_R_GPL_00.07.12.3/rutos-ipq40xx-rutx-sdk/staging_dir/toolchain-arm_cortex-a7+neon-vfpv4_gcc-8.4.0_musl_eabi/bin/arm-openwrt-linux-g++'
+ar = '/home/parallels/second_part/RUTX_R_GPL_00.07.12.3/rutos-ipq40xx-rutx-sdk/staging_dir/toolchain-arm_cortex-a7+neon-vfpv4_gcc-8.4.0_musl_eabi/bin/arm-openwrt-linux-ar'
+strip = '/home/parallels/second_part/RUTX_R_GPL_00.07.12.3/rutos-ipq40xx-rutx-sdk/staging_dir/toolchain-arm_cortex-a7+neon-vfpv4_gcc-8.4.0_musl_eabi/bin/arm-openwrt-linux-strip'
+pkg-config = '/home/parallels/second_part/RUTX_R_GPL_00.07.12.3/rutos-ipq40xx-rutx-sdk/staging_dir/host/bin/pkg-config-wrapper'  # If provided & configured for cross
+
+[host_machine]
+system = 'linux'
+cpu_family = 'arm'
+cpu = 'armv7'
+endian = 'little'
+
+[build_machine]
+system = 'linux'
+cpu_family = 'aarch64'
+cpu = 'aarch64'
+endian = 'little'
+
+[properties]
+sys_root = ''
+c_args = ['-march=armv7-a','-mfloat-abi=hard', '-mfpu=neon-vfpv4']
+c_link_args = []
+
+
+[built-in options]
+c_std = 'gnu11'
+cpp_std = 'gnu++11'
+default_library = 'static'
+

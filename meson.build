@@ -225,70 +225,55 @@ gthread_dep = dependency('gthread-2.0',
   fallback: ['glib', 'libgthread_dep'])
 
 # Cryto library
-opt_cryptolib = get_option('crypto-library')
-message('Crypto library requested: ' + opt_cryptolib)
-crypto_dep = dependency('', required: false) # special always not found
-if opt_cryptolib == 'auto' and host_machine.system() == 'windows'
-  crypto_dep = cc.find_library('advapi32')
-  cdata.set('USE_WIN32_CRYPTO', crypto_dep.found())
+
+
+openssl_static_path = get_option('openssl_static_path')
+if openssl_static_path != ''
+
+  openssl_inc_dir = join_paths(openssl_static_path, 'include')
+  openssl_lib_dir = join_paths(openssl_static_path, 'lib')
+  
+
+
+  
+  # Add library paths directly using link_args
+  openssl_link_args = []
+  
+  libssl_path = join_paths(openssl_lib_dir, 'libssl.a')
+  libcrypto_path = join_paths(openssl_lib_dir, 'libcrypto.a')
+  
+  openssl_link_args += [libssl_path, libcrypto_path]
+  
+  openssl_headers = ['crypto.h', 'engine.h', 'err.h', 'pem.h', 'rsa.h', 'ssl.h', 'x509.h', 'rand.h', 'tls1.h']
+
+  
+  libssl = cc.find_library('ssl', dirs: ['/home/parallels/second_part/libnice/OpenSSL/install/lib'], static: true, required: true, has_headers:openssl_headers, header_include_directories: include_directories('OpenSSL/install/include/openssl'))
+  libcrypto= cc.find_library('crypto', dirs: ['/home/parallels/second_part/libnice/OpenSSL/install/lib'], static: true, required: true)
+
+  
+  # Set the flag to indicate we're using OpenSSL
+  cdata.set('HAVE_OPENSSL', true)
+  crypto_found = true
+  
+    # Create a proper dependency that will propagate include directories
+  crypto_dep = declare_dependency(
+    include_directories: include_directories('OpenSSL/install/include/openssl'),
+    dependencies: [libssl, libcrypto]
+  )
+  
+  
+  # Skip the regular OpenSSL detection
+  # crypto_dep = [libssl, libcrypto]
+
+else
+  # Original OpenSSL detection code
+  openssl_dep = dependency('openssl', required: get_option('openssl'))
 endif
 
-if not crypto_dep.found() and opt_cryptolib != 'openssl'
-  crypto_dep = dependency('gnutls', version: gnutls_req, required: false)
-  cdata.set('HAVE_GNUTLS', crypto_dep.found())
-endif
 
-if not crypto_dep.found() and opt_cryptolib != 'gnutls'
-  crypto_dep = dependency('openssl', required: false,
-			  fallback: ['openssl', 'openssl_dep'])
-  cdata.set('HAVE_OPENSSL', crypto_dep.found())
-endif
 
-crypto_found = crypto_dep.found()
-if not crypto_found and opt_cryptolib != 'gnutls'
-  # MSVC builds of OpenSSL does not generate pkg-config files,
-  # so we check for it manually here in this case, if we can't find those files
-  # Based on the CMake check for OpenSSL in CURL's CMakeLists.txt,
-  # on which headers we should check for
-  openssl_headers = []
-  foreach h : ['crypto.h', 'engine.h', 'err.h', 'pem.h',
-               'rsa.h', 'ssl.h', 'x509.h', 'rand.h', 'tls1.h']
-    openssl_headers += 'openssl/' + h
-  endforeach
 
-  # OpenSSL 1.1.x and 1.0.x (or earlier) have different .lib names,
-  # so we need to look for the correct pair
 
-  # Find either libcrypto.lib (1.1.x) or libeay32.lib (1.0.x or earlier) first
-  libcrypto_dep = cc.find_library('crypto', required: false)
-  if libcrypto_dep.found()
-    libssl = 'ssl'
-  else
-    libcrypto_dep = cc.find_library('eay32', required: false)
-    libssl = 'ssleay32'
-  endif
-
-  if libcrypto_dep.found()
-    # Find the corresponding SSL library depending on which crypto .lib we found
-    libssl_dep = cc.find_library(libssl, required: false, has_headers: openssl_headers)
-  endif
-
-  if libcrypto_dep.found() and libssl_dep.found()
-    crypto_dep = [libcrypto_dep, libssl_dep]
-    cdata.set('HAVE_OPENSSL', true)
-    crypto_found = true
-  endif
-endif
-
-if not crypto_found
-  if opt_cryptolib == 'gnutls'
-    error('GnuTLS requested as crypto library, but not found')
-  elif opt_cryptolib == 'openssl'
-    error('OpenSSL requested as crypto library, but not found')
-  else
-    error('Either GnuTLS or OpenSSL is required as crypto library, but neither was found')
-  endif
-endif
 
 # GStreamer
 gst_dep = dependency('gstreamer-base-1.0', version: gst_req,
@@ -303,7 +288,7 @@ cdata.set('HAVE_GUPNP', gupnp_igd_dep.found(), description: 'Use the GUPnP IGD l
 
 libm = cc.find_library('m', required: false)
 
-nice_incs = include_directories('.', 'agent', 'random', 'socket', 'stun')
+nice_incs = include_directories('.', 'agent', 'random', 'socket', 'stun', 'OpenSSL/install/include')
 
 nice_deps = gio_deps + [gthread_dep, crypto_dep, gupnp_igd_dep] + syslibs
 
